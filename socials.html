@@ -129,7 +129,6 @@
         .status-done { color: #55ff55; }
         .status-error { color: #ff5555; }
 
-        /* Username Claim Section Per Task */
         .claim-zone {
             display: none;
             margin-top: 15px;
@@ -196,7 +195,6 @@
         <p class="subtitle">Complete individual tasks below to grab your in-game loot!</p>
 
         <div class="social-list">
-            <!-- TASK 1: YOUTUBE CARD -->
             <div class="social-card" id="card-yt">
                 <div class="social-item">
                     <div class="social-info">
@@ -216,7 +214,6 @@
                 </div>
             </div>
 
-            <!-- TASK 2: TWITTER / X CARD -->
             <div class="social-card" id="card-tw">
                 <div class="social-item">
                     <div class="social-info">
@@ -239,12 +236,10 @@
     </div>
 
     <script>
-        // Internal state trackers
         let activePlatform = null;
         let clickTime = 0;
         let verifyTimeout = null;
 
-        // Base URLs to reset to when retrying
         const links = {
             yt: "https://youtube.com",
             tw: "https://twitter.com"
@@ -257,7 +252,6 @@
             const actionDiv = document.getElementById(`action-${platform}`);
             actionDiv.innerHTML = '<span class="status-txt status-pending">Verifying...</span>';
 
-            // Setup a standard 7-second auto-success if they stay away long enough
             verifyTimeout = setTimeout(() => {
                 if (activePlatform === platform) {
                     executeVerificationSuccess(platform);
@@ -265,13 +259,10 @@
             }, 7000);
         }
 
-        // Tab Window Focus Listener Engine
         document.addEventListener('visibilitychange', () => {
-            // Check if user came back to the website portal tab
             if (document.visibilityState === 'visible' && activePlatform !== null) {
                 const timeSpentAway = (Date.now() - clickTime) / 1000;
                 
-                // CRITICAL CHECK: If they returned under 3 seconds, break verification sequence!
                 if (timeSpentAway < 3) {
                     clearTimeout(verifyTimeout);
                     executeVerificationFailure(activePlatform);
@@ -288,7 +279,6 @@
             cardDiv.className = "social-card completed";
             claimZone.style.display = "block";
             
-            // Clean tracker
             if(activePlatform === platform) activePlatform = null;
         }
 
@@ -307,9 +297,6 @@
             activePlatform = null;
         }
 
-        // ==========================================
-        // 🌐 THE API BRIDGE CONNECTION
-        // ==========================================
         async function submitClaim(platform) {
             const usernameInput = document.getElementById(`user-${platform}`);
             const btn = document.getElementById(`btn-${platform}`);
@@ -324,32 +311,25 @@
                 return;
             }
             
-            // 1. Lock UI while loading
             feedbackText.innerText = "";
             usernameInput.disabled = true;
             btn.disabled = true;
             btn.innerText = "Checking...";
             
             try {
-                // 2. Build the data to send to your PHP file
                 const formData = new FormData();
                 formData.append('username', username);
                 formData.append('platform', platform);
                 
-                // 3. Fire the request to your backend (Make sure claim.php is in the same folder, or use a full URL)
                 const response = await fetch('claim.php', {
                     method: 'POST',
                     body: formData
                 });
                 
-                // 4. Parse the response from Skript
                 const data = await response.json();
                 
                 if (data.status === "error") {
-                    // Extract Skript's error message and remove the console tag
                     let cleanError = data.message.replace("[API-FAIL] ", "");
-                    
-                    // Show error and unlock UI for a retry
                     feedbackText.style.color = "#ff5555";
                     feedbackText.innerText = cleanError;
                     usernameInput.disabled = false;
@@ -357,7 +337,6 @@
                     btn.innerText = "Claim";
                     
                 } else {
-                    // SUCCESS! 
                     feedbackText.style.color = "#55ff55";
                     feedbackText.innerText = data.message;
                     btn.innerText = "Sent!";
@@ -365,7 +344,6 @@
                 }
                 
             } catch (error) {
-                // Failsafe if the PHP file is missing or server is offline
                 feedbackText.style.color = "#ff5555";
                 feedbackText.innerText = "Could not connect to the server database. Try again later.";
                 usernameInput.disabled = false;
@@ -374,6 +352,5 @@
             }
         }
     </script>
-
 </body>
 </html>
