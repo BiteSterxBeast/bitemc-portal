@@ -7,10 +7,10 @@ use Thedudeguy\Rcon;
 header('Content-Type: application/json');
 
 // --- SERVER SETTINGS ---
-$host = 'bitemc.xyz'; // Your SMP IP
-$port = 25575; // Default RCON port
-$password = 'bitebooneydev67'; // Set this in server.properties
-$timeout = 3; // Give up after 3 seconds if the server is offline
+$host = 'bitemc.xyz'; 
+$port = 25575; 
+$password = 'bitebooneydev67'; 
+$timeout = 3; 
 
 $rcon = new Rcon($host, $port, $password, $timeout);
 
