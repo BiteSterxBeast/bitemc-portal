@@ -2,7 +2,7 @@
 // 1. Connect to Minecraft RCON
 require __DIR__ . '/src/Rcon.php';
 $rcon = new \xPaw\MinecraftRcon();
-$rcon->Connect( 'YOUR_SERVER_IP', 25575, 'YOUR_RCON_PASSWORD' );
+$rcon->Connect( 'bitemc.xyz', 25575, 'bitebooneydev67' );
 
 // 2. Get the username from the HTML website
 $username = $_POST['username'];
