@@ -6,7 +6,7 @@
     <title>Social Rewards Claim</title>
     <style>
         body {
-            background-color: #0f172a; /* Dark background to match your site */
+            background-color: #0f172a;
             color: #f8fafc;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
@@ -16,10 +16,9 @@
             margin: 0;
         }
 
-        /* The Main Crate Container */
         .claim-container {
             background-color: #1e293b;
-            border: 2px solid #4ade80; /* Default Green Border */
+            border: 2px solid #4ade80;
             border-radius: 8px;
             padding: 24px;
             width: 450px;
@@ -61,19 +60,6 @@
             margin-bottom: 16px;
         }
 
-        /* Platform Dropdown */
-        select {
-            background-color: #334155;
-            color: white;
-            border: 1px solid #475569;
-            border-radius: 6px;
-            padding: 10px;
-            font-weight: bold;
-            outline: none;
-            cursor: pointer;
-        }
-
-        /* Username Input */
         input[type="text"] {
             flex-grow: 1;
             background-color: #eff6ff;
@@ -86,7 +72,6 @@
             outline: none;
         }
 
-        /* Claim Button */
         button {
             background-color: #4ade80;
             color: #064e3b;
@@ -97,9 +82,10 @@
             font-weight: bold;
             cursor: pointer;
             transition: opacity 0.2s;
+            min-width: 120px;
         }
 
-        button:hover {
+        button:hover:not(:disabled) {
             opacity: 0.9;
         }
 
@@ -109,7 +95,6 @@
             cursor: not-allowed;
         }
 
-        /* Message Text */
         .message {
             text-align: center;
             font-weight: bold;
@@ -122,24 +107,18 @@
 
     <div id="claimBox" class="claim-container">
         <div class="header-row">
-            <h2>Social Verification</h2>
+            <h2 id="platformTitle">YouTube Verification</h2>
             <span class="status-badge">✓ Active</span>
         </div>
-        <p class="subtitle">Select the platform you verified and enter your Minecraft IGN.</p>
+        <p class="subtitle">Enter your Minecraft IGN to verify and claim your reward.</p>
 
         <form id="claimForm">
+            <!-- Hidden input stores the platform name from the URL automatically! -->
+            <input type="hidden" name="platform" id="hiddenPlatform" value="YouTube">
+            
             <div class="form-row">
-                <select id="platformSelect" name="platform">
-                    <option value="YouTube">YouTube</option>
-                    <option value="Discord">Discord</option>
-                    <option value="Instagram">Instagram</option>
-                    <option value="X">X (Twitter)</option>
-                    <option value="TikTok">TikTok</option>
-                </select>
-
                 <input type="text" id="username" name="username" placeholder="BiteSterxBeastYT" required autocomplete="off">
-                
-                <button type="submit" id="claimBtn">Claim</button>
+                <button type="submit" id="claimBtn" disabled>Wait 3s...</button>
             </div>
         </form>
 
@@ -147,15 +126,40 @@
     </div>
 
     <script>
+        // 1. Read the platform from the URL (e.g., ?platform=Discord)
+        const urlParams = new URLSearchParams(window.location.search);
+        let platform = urlParams.get('platform');
+        
+        // Default to YouTube if they just go to the site normally without a link
+        if (!platform) { platform = "YouTube"; }
+
+        // Update the UI dynamically
+        document.getElementById('platformTitle').innerText = platform + " Verification";
+        document.getElementById('hiddenPlatform').value = platform;
+
+        // 2. The 3-Second Wait Rule
+        const btn = document.getElementById('claimBtn');
+        let timeLeft = 3;
+        
+        const countdown = setInterval(() => {
+            timeLeft--;
+            if (timeLeft > 0) {
+                btn.innerText = `Wait ${timeLeft}s...`;
+            } else {
+                clearInterval(countdown);
+                btn.innerText = "Claim";
+                btn.disabled = false;
+            }
+        }, 1000);
+
+        // 3. Handle the Submission
         document.getElementById('claimForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // Stop page from refreshing
+            e.preventDefault(); 
             
             const box = document.getElementById('claimBox');
             const msg = document.getElementById('messageText');
-            const btn = document.getElementById('claimBtn');
             const formData = new FormData(this);
             
-            // Visual loading state
             btn.innerText = "Wait...";
             btn.disabled = true;
             msg.innerText = "";
@@ -170,20 +174,15 @@
                 btn.disabled = false;
                 msg.innerText = data.message;
                 
-                // --- STATE 1: ALREADY CLAIMED (RED) ---
                 if (data.status === 'already_claimed') {
-                    box.style.borderColor = "#ef4444"; // Red border
-                    msg.style.color = "#ef4444"; // Red text
-                } 
-                // --- STATE 2: SUCCESS (GREEN) ---
-                else if (data.status === 'success') {
-                    box.style.borderColor = "#4ade80"; // Green border
-                    msg.style.color = "#4ade80"; // Green text
-                } 
-                // --- STATE 3: SERVER ERROR (RED) ---
-                else {
-                    box.style.borderColor = "#ef4444"; // Red border
-                    msg.style.color = "#ef4444"; // Red text
+                    box.style.borderColor = "#ef4444"; 
+                    msg.style.color = "#ef4444"; 
+                } else if (data.status === 'success') {
+                    box.style.borderColor = "#4ade80"; 
+                    msg.style.color = "#4ade80"; 
+                } else {
+                    box.style.borderColor = "#ef4444"; 
+                    msg.style.color = "#ef4444"; 
                 }
             })
             .catch(error => {
