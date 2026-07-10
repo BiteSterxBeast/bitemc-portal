@@ -151,18 +151,18 @@ try {
     $connected = $rcon->connect();
     
     if ($connected) {
-        // We now send TWO arguments: The Username and the Platform Name
         $response = $rcon->sendCommand("api-socialverify " . $username . " " . $platform);
         
-        if (strpos((string)$response, '[API-ALREADY]') !== false) {
-            echo json_encode(["status" => "already_claimed", "message" => "You have already redeemed this platform!"]);
+        if (strpos((string)$response, '[API-ALREADY-VERIFIED]') !== false) {
+            echo json_encode(["status" => "already_verified", "message" => "Already verified! Go open the crate in-game!"]);
+        } else if (strpos((string)$response, '[API-ALREADY]') !== false) {
+            echo json_encode(["status" => "already_claimed", "message" => "Error: You have already permanently redeemed this platform!"]);
         } else if (strpos((string)$response, '[API-FAIL]') !== false) {
             echo json_encode(["status" => "error", "message" => $response]);
         } else {
-            echo json_encode(["status" => "success", "message" => "Verified! Head to the server crates to pick up your loot!"]);
+            echo json_encode(["status" => "success", "message" => "Success! Head to the server crates to pick up your loot!"]);
         }
     }
 } catch (Throwable $e) { 
     echo json_encode(["status" => "error", "message" => "[API-FAIL] " . $e->getMessage()]);
 }
-?>
