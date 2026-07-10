@@ -2,9 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BiteMC - Social Rewards Portal</title>
     <style>
+        /* 🔒 LOCKED VIEWPORT TO FIX MOBILE SCROLL BUG */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; 
+            overscroll-behavior: none; /* Stops mobile bouncing */
+        }
+
         body {
             background-color: #050505;
             color: #ffffff;
@@ -13,12 +23,9 @@
             justify-content: center;
             align-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
+            padding: 15px;
             box-sizing: border-box;
             position: relative;
-            overflow: hidden;
         }
 
         body::before {
@@ -123,37 +130,65 @@
             background: rgba(20, 24, 32, 0.45);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            padding: 30px;
+            padding: 25px;
             border-radius: 16px;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(85, 255, 85, 0.05);
             width: 100%;
             max-width: 480px;
+            max-height: 95vh; /* Fits on mobile screen */
             text-align: center;
             border: 1px solid rgba(85, 255, 85, 0.2);
             z-index: 10;
+            display: flex;
+            flex-direction: column;
         }
 
         h1 {
             color: #55ff55;
             margin-bottom: 5px;
-            font-size: 28px;
+            font-size: 26px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             text-shadow: 0 0 10px rgba(85, 255, 85, 0.4);
-        }
-
-        p.subtitle {
-            color: #a0a5b5;
             margin-top: 0;
-            margin-bottom: 25px;
-            font-size: 14px;
         }
 
+        /* 📢 DOMAIN TRANSFER NOTICE */
+        .domain-notice {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid rgba(255, 170, 0, 0.4);
+            color: #ffaa00;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px rgba(255, 170, 0, 0.2);
+        }
+
+        /* 📜 INTERNAL SCROLLING LIST */
         .social-list {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            margin-bottom: 10px;
+            gap: 15px;
+            margin-bottom: 5px;
+            overflow-y: auto; /* Allows scrolling only inside this box */
+            padding-right: 5px;
+            -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
+            flex-grow: 1;
+        }
+
+        /* Custom Scrollbar for the list */
+        .social-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .social-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        .social-list::-webkit-scrollbar-thumb {
+            background: rgba(85, 255, 85, 0.4);
+            border-radius: 4px;
         }
 
         /* GLASS CARDS */
@@ -164,6 +199,7 @@
             border-radius: 10px;
             padding: 15px;
             transition: all 0.3s ease;
+            flex-shrink: 0;
         }
 
         .social-card:hover {
@@ -201,27 +237,29 @@
 
         .social-name {
             font-weight: bold;
-            font-size: 16px;
+            font-size: 15px;
         }
 
         .social-desc {
             font-size: 12px;
             color: #888e9e;
+            margin-top: 2px;
         }
 
         .btn {
             background: linear-gradient(135deg, #4444ff, #5555ff);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 10px 16px;
+            padding: 10px 14px;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
             text-decoration: none;
-            font-size: 14px;
+            font-size: 13px;
             transition: all 0.2s ease;
             display: inline-block;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
         }
 
         .btn:hover:not(:disabled) {
@@ -244,7 +282,7 @@
 
         .status-txt {
             font-weight: bold;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .status-pending { color: #ffaa00; text-shadow: 0 0 5px rgba(255, 170, 0, 0.5); }
@@ -327,7 +365,10 @@
     <!-- MAIN UI -->
     <div class="container">
         <h1>Social Rewards</h1>
-        <p class="subtitle">Complete individual tasks below to grab your in-game loot!</p>
+        
+        <div class="domain-notice">
+            ⚠️ Note: Social Crate rewards are hosted on this domain temporarily. This page will be moving to BiteMC.xyz in the near future!
+        </div>
 
         <div class="social-list">
             
@@ -434,7 +475,7 @@
         </div>
     </div>
 
-<script>
+    <script>
         // --- 1. MODAL LOGIC ---
         const modal = document.getElementById('bedrockModal');
         const modalBtn = document.getElementById('modalBtn');
@@ -461,32 +502,29 @@
         let globalCooldownActive = false;
 
         function applyGlobalCooldown(currentPlatform) {
-            if (globalCooldownActive) return; // Don't restart it if it's already running
+            if (globalCooldownActive) return; 
             globalCooldownActive = true;
             
             let timeLeft = 10;
             const allPlatforms = Object.keys(platformApiNames);
             
             allPlatforms.forEach(p => {
-                if (p === currentPlatform) return; // Keep the active platform unlocked
+                if (p === currentPlatform) return; 
                 
                 const actionDiv = document.getElementById(`action-${p}`);
                 const btn = document.getElementById(`btn-${p}`);
                 const input = document.getElementById(`user-${p}`);
                 
-                // Freeze the "Follow Link" buttons or status texts for other platforms
                 if (actionDiv && !actionDiv.dataset.inCooldown) {
-                    actionDiv.dataset.origHtml = actionDiv.innerHTML; // Remember the original link button
+                    actionDiv.dataset.origHtml = actionDiv.innerHTML; 
                     actionDiv.dataset.inCooldown = "true";
                     actionDiv.innerHTML = `<span class="status-txt status-error" style="color: #6a6f7e; text-shadow: none;">Wait ${timeLeft}s</span>`;
                 }
                 
-                // Failsafe: lock input zones if they somehow managed to open them
                 if (btn) btn.disabled = true;
                 if (input) input.disabled = true;
             });
             
-            // 10 Second Countdown Ticker
             const cdInt = setInterval(() => {
                 timeLeft--;
                 if (timeLeft > 0) {
@@ -501,7 +539,6 @@
                     clearInterval(cdInt);
                     globalCooldownActive = false;
                     
-                    // Restore original link buttons perfectly
                     allPlatforms.forEach(p => {
                         if (p === currentPlatform) return;
                         const actionDiv = document.getElementById(`action-${p}`);
@@ -558,7 +595,6 @@
             }, 7000);
         }
 
-        // 👁️ TAB VISIBILITY MONITOR (Triggers Cooldown on Return)
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && activePlatform !== null) {
                 const timeSpentAway = (Date.now() - clickTime) / 1000;
@@ -567,7 +603,6 @@
                     clearTimeout(verifyTimeout);
                     executeVerificationFailure(activePlatform);
                 } else {
-                    // 👉 THE FIX: The split second they open back the site, start the 10s cooldown!
                     applyGlobalCooldown(activePlatform);
                 }
             }
