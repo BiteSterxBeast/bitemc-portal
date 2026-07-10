@@ -21,7 +21,6 @@
             overflow: hidden;
         }
 
-        /* 🟢 NEON GRID BACKGROUND */
         body::before {
             content: "";
             position: absolute;
@@ -35,7 +34,6 @@
             z-index: -2;
         }
         
-        /* Background vignette for depth */
         body::after {
             content: "";
             position: absolute;
@@ -49,7 +47,6 @@
             100% { transform: perspective(500px) rotateX(45deg) translateY(40px); }
         }
 
-        /* 🧊 LIQUID GLASS UI CONTAINER */
         .container {
             background: rgba(20, 24, 32, 0.45);
             backdrop-filter: blur(16px);
@@ -87,7 +84,6 @@
             margin-bottom: 10px;
         }
 
-        /* GLASS CARDS */
         .social-card {
             background: rgba(30, 35, 45, 0.4);
             backdrop-filter: blur(8px);
@@ -235,6 +231,32 @@
             font-weight: bold;
         }
 
+        /* 🎮 CROSSPLAY PLATFORM SELECTOR PROMPT */
+        .platform-prompt {
+            display: none;
+            margin-top: 12px;
+            gap: 10px;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .btn-edition {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-edition:hover {
+            background: rgba(85, 255, 85, 0.2);
+            border-color: #55ff55;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
@@ -265,6 +287,10 @@
                         <input type="text" id="user-discord" placeholder="Minecraft Username">
                         <button class="btn btn-claim" id="btn-discord" onclick="submitClaim('discord')">Claim</button>
                     </div>
+                    <div class="platform-prompt" id="prompt-discord">
+                        <button class="btn-edition" onclick="handleEditionSelect('discord', 'java')">Java Edition</button>
+                        <button class="btn-edition" onclick="handleEditionSelect('discord', 'bedrock')">Bedrock Edition</button>
+                    </div>
                     <span class="api-feedback" id="feedback-discord"></span>
                 </div>
             </div>
@@ -284,6 +310,10 @@
                     <div class="input-group">
                         <input type="text" id="user-youtube" placeholder="Minecraft Username">
                         <button class="btn btn-claim" id="btn-youtube" onclick="submitClaim('youtube')">Claim</button>
+                    </div>
+                    <div class="platform-prompt" id="prompt-youtube">
+                        <button class="btn-edition" onclick="handleEditionSelect('youtube', 'java')">Java Edition</button>
+                        <button class="btn-edition" onclick="handleEditionSelect('youtube', 'bedrock')">Bedrock Edition</button>
                     </div>
                     <span class="api-feedback" id="feedback-youtube"></span>
                 </div>
@@ -305,6 +335,10 @@
                         <input type="text" id="user-instagram" placeholder="Minecraft Username">
                         <button class="btn btn-claim" id="btn-instagram" onclick="submitClaim('instagram')">Claim</button>
                     </div>
+                    <div class="platform-prompt" id="prompt-instagram">
+                        <button class="btn-edition" onclick="handleEditionSelect('instagram', 'java')">Java Edition</button>
+                        <button class="btn-edition" onclick="handleEditionSelect('instagram', 'bedrock')">Bedrock Edition</button>
+                    </div>
                     <span class="api-feedback" id="feedback-instagram"></span>
                 </div>
             </div>
@@ -325,6 +359,10 @@
                         <input type="text" id="user-x" placeholder="Minecraft Username">
                         <button class="btn btn-claim" id="btn-x" onclick="submitClaim('x')">Claim</button>
                     </div>
+                    <div class="platform-prompt" id="prompt-x">
+                        <button class="btn-edition" onclick="handleEditionSelect('x', 'java')">Java Edition</button>
+                        <button class="btn-edition" onclick="handleEditionSelect('x', 'bedrock')">Bedrock Edition</button>
+                    </div>
                     <span class="api-feedback" id="feedback-x"></span>
                 </div>
             </div>
@@ -344,6 +382,10 @@
                     <div class="input-group">
                         <input type="text" id="user-tiktok" placeholder="Minecraft Username">
                         <button class="btn btn-claim" id="btn-tiktok" onclick="submitClaim('tiktok')">Claim</button>
+                    </div>
+                    <div class="platform-prompt" id="prompt-tiktok">
+                        <button class="btn-edition" onclick="handleEditionSelect('tiktok', 'java')">Java Edition</button>
+                        <button class="btn-edition" onclick="handleEditionSelect('tiktok', 'bedrock')">Bedrock Edition</button>
                     </div>
                     <span class="api-feedback" id="feedback-tiktok"></span>
                 </div>
@@ -423,12 +465,40 @@
             activePlatform = null;
         }
 
+        // --- NEW: Handle Edition Selection Prompt ---
+        function handleEditionSelect(platform, edition) {
+            const usernameInput = document.getElementById(`user-${platform}`);
+            const promptDiv = document.getElementById(`prompt-${platform}`);
+            const feedbackText = document.getElementById(`feedback-${platform}`);
+            const btn = document.getElementById(`btn-${platform}`);
+
+            promptDiv.style.display = "none";
+            feedbackText.innerText = "";
+
+            if (edition === 'bedrock') {
+                let currentVal = usernameInput.value.trim();
+                if (!currentVal.startsWith('.')) {
+                    usernameInput.value = '.' + currentVal;
+                }
+                feedbackText.style.color = "#ffaa00";
+                feedbackText.innerText = "Prefix added! Press Claim again to verify.";
+            } else {
+                feedbackText.style.color = "#ff5555";
+                feedbackText.innerText = "Make sure you are logged into the server right now!";
+            }
+
+            usernameInput.disabled = false;
+            btn.disabled = false;
+            btn.innerText = "Claim";
+        }
+
         async function submitClaim(platform) {
             const usernameInput = document.getElementById(`user-${platform}`);
             const btn = document.getElementById(`btn-${platform}`);
             const feedbackText = document.getElementById(`feedback-${platform}`);
             const actionDiv = document.getElementById(`action-${platform}`);
             const cardDiv = document.getElementById(`card-${platform}`);
+            const promptDiv = document.getElementById(`prompt-${platform}`);
             
             const username = usernameInput.value.trim();
             
@@ -439,6 +509,7 @@
             }
             
             feedbackText.innerText = "";
+            promptDiv.style.display = "none";
             usernameInput.disabled = true;
             btn.disabled = true;
             btn.innerText = "Checking...";
@@ -459,7 +530,6 @@
                 
                 const data = await response.json();
                 
-                // ERROR CATCH (RCON Failure)
                 if (data.status === "error") {
                     let cleanError = data.message.replace("[API-FAIL] ", "");
                     feedbackText.style.color = "#ff5555";
@@ -469,7 +539,13 @@
                     btn.disabled = false;
                     btn.innerText = "Claim";
                     
-                // STATE 1: ALREADY CLAIMED PERMANENTLY (RED)
+                // STATE 1: UNABLE TO FIND PLAYER (Show edition choice prompt)
+                } else if (data.status === "player_offline") {
+                    feedbackText.style.color = "#ff5555";
+                    feedbackText.innerText = data.message;
+                    promptDiv.style.display = "flex"; // Show Java/Bedrock buttons
+                
+                // STATE 2: ALREADY CLAIMED PERMANENTLY (RED)
                 } else if (data.status === "already_claimed") {
                     feedbackText.style.color = "#ff5555";
                     feedbackText.innerText = data.message;
@@ -477,7 +553,7 @@
                     cardDiv.className = "social-card failed";
                     actionDiv.innerHTML = '<span class="status-txt status-error">Already Redeemed</span>';
                     
-                // STATE 2: ALREADY VERIFIED, PENDING PICKUP (YELLOW)
+                // STATE 3: ALREADY VERIFIED, PENDING PICKUP (YELLOW)
                 } else if (data.status === "already_verified") {
                     feedbackText.style.color = "#ffaa00";
                     feedbackText.innerText = data.message;
@@ -485,7 +561,7 @@
                     cardDiv.className = "social-card pending-crate";
                     actionDiv.innerHTML = '<span class="status-txt status-pending">Check In-Game Crate</span>';
                 
-                // STATE 3: SUCCESS, GO TO CRATE (GREEN)
+                // STATE 4: SUCCESS, GO TO CRATE (GREEN)
                 } else {
                     feedbackText.style.color = "#55ff55";
                     feedbackText.innerText = data.message;
