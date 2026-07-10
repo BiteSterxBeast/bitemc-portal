@@ -47,6 +47,78 @@
             100% { transform: perspective(500px) rotateX(45deg) translateY(40px); }
         }
 
+        /* ⚠️ BEDROCK WARNING MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .modal-content {
+            background: rgba(20, 24, 32, 0.85);
+            border: 1px solid rgba(255, 170, 0, 0.5);
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(255, 170, 0, 0.05);
+        }
+
+        .modal-title {
+            color: #ffaa00;
+            font-size: 22px;
+            margin-bottom: 12px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
+        }
+
+        .modal-text {
+            color: #d1d5db;
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .modal-text code {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 3px 6px;
+            border-radius: 4px;
+            color: #55ff55;
+            font-weight: bold;
+        }
+
+        .btn-modal {
+            background: #2a2e3a;
+            color: #6a6f7e;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: not-allowed;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-modal.ready {
+            background: linear-gradient(135deg, #33cc33, #55ff55);
+            color: #050505;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(85, 255, 85, 0.3);
+        }
+
+        .btn-modal.ready:hover {
+            box-shadow: 0 6px 20px rgba(85, 255, 85, 0.5);
+        }
+
+        /* 🧊 MAIN CONTAINER */
         .container {
             background: rgba(20, 24, 32, 0.45);
             backdrop-filter: blur(16px);
@@ -84,6 +156,7 @@
             margin-bottom: 10px;
         }
 
+        /* GLASS CARDS */
         .social-card {
             background: rgba(30, 35, 45, 0.4);
             backdrop-filter: blur(8px);
@@ -231,32 +304,6 @@
             font-weight: bold;
         }
 
-        /* 🎮 CROSSPLAY PLATFORM SELECTOR PROMPT */
-        .platform-prompt {
-            display: none;
-            margin-top: 12px;
-            gap: 10px;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .btn-edition {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 6px 12px;
-            font-size: 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-
-        .btn-edition:hover {
-            background: rgba(85, 255, 85, 0.2);
-            border-color: #55ff55;
-        }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
@@ -265,6 +312,19 @@
 </head>
 <body>
 
+    <!-- BEDROCK WARNING POP-UP -->
+    <div class="modal-overlay" id="bedrockModal">
+        <div class="modal-content">
+            <div class="modal-title">⚠️ Bedrock Players Read This</div>
+            <div class="modal-text">
+                BiteMC is primarily a Java server. Because of crossplay, all Bedrock usernames automatically have a <strong>.</strong> (dot) added to the beginning.<br><br>
+                When entering your name on this site, you <strong>MUST</strong> include the dot (e.g. <code>.wisoland84</code>), otherwise the system will not find you!
+            </div>
+            <button class="btn-modal" id="modalBtn" disabled>Continue (Wait 5s)</button>
+        </div>
+    </div>
+
+    <!-- MAIN UI -->
     <div class="container">
         <h1>Social Rewards</h1>
         <p class="subtitle">Complete individual tasks below to grab your in-game loot!</p>
@@ -287,10 +347,6 @@
                         <input type="text" id="user-discord" placeholder="Minecraft Username">
                         <button class="btn btn-claim" id="btn-discord" onclick="submitClaim('discord')">Claim</button>
                     </div>
-                    <div class="platform-prompt" id="prompt-discord">
-                        <button class="btn-edition" onclick="handleEditionSelect('discord', 'java')">Java Edition</button>
-                        <button class="btn-edition" onclick="handleEditionSelect('discord', 'bedrock')">Bedrock Edition</button>
-                    </div>
                     <span class="api-feedback" id="feedback-discord"></span>
                 </div>
             </div>
@@ -310,10 +366,6 @@
                     <div class="input-group">
                         <input type="text" id="user-youtube" placeholder="Minecraft Username">
                         <button class="btn btn-claim" id="btn-youtube" onclick="submitClaim('youtube')">Claim</button>
-                    </div>
-                    <div class="platform-prompt" id="prompt-youtube">
-                        <button class="btn-edition" onclick="handleEditionSelect('youtube', 'java')">Java Edition</button>
-                        <button class="btn-edition" onclick="handleEditionSelect('youtube', 'bedrock')">Bedrock Edition</button>
                     </div>
                     <span class="api-feedback" id="feedback-youtube"></span>
                 </div>
@@ -335,10 +387,6 @@
                         <input type="text" id="user-instagram" placeholder="Minecraft Username">
                         <button class="btn btn-claim" id="btn-instagram" onclick="submitClaim('instagram')">Claim</button>
                     </div>
-                    <div class="platform-prompt" id="prompt-instagram">
-                        <button class="btn-edition" onclick="handleEditionSelect('instagram', 'java')">Java Edition</button>
-                        <button class="btn-edition" onclick="handleEditionSelect('instagram', 'bedrock')">Bedrock Edition</button>
-                    </div>
                     <span class="api-feedback" id="feedback-instagram"></span>
                 </div>
             </div>
@@ -358,10 +406,6 @@
                     <div class="input-group">
                         <input type="text" id="user-x" placeholder="Minecraft Username">
                         <button class="btn btn-claim" id="btn-x" onclick="submitClaim('x')">Claim</button>
-                    </div>
-                    <div class="platform-prompt" id="prompt-x">
-                        <button class="btn-edition" onclick="handleEditionSelect('x', 'java')">Java Edition</button>
-                        <button class="btn-edition" onclick="handleEditionSelect('x', 'bedrock')">Bedrock Edition</button>
                     </div>
                     <span class="api-feedback" id="feedback-x"></span>
                 </div>
@@ -383,10 +427,6 @@
                         <input type="text" id="user-tiktok" placeholder="Minecraft Username">
                         <button class="btn btn-claim" id="btn-tiktok" onclick="submitClaim('tiktok')">Claim</button>
                     </div>
-                    <div class="platform-prompt" id="prompt-tiktok">
-                        <button class="btn-edition" onclick="handleEditionSelect('tiktok', 'java')">Java Edition</button>
-                        <button class="btn-edition" onclick="handleEditionSelect('tiktok', 'bedrock')">Bedrock Edition</button>
-                    </div>
                     <span class="api-feedback" id="feedback-tiktok"></span>
                 </div>
             </div>
@@ -395,6 +435,85 @@
     </div>
 
     <script>
+        // --- 1. MODAL LOGIC ---
+        const modal = document.getElementById('bedrockModal');
+        const modalBtn = document.getElementById('modalBtn');
+        let modalTimer = 5;
+
+        const mInterval = setInterval(() => {
+            modalTimer--;
+            if (modalTimer > 0) {
+                modalBtn.innerText = `Continue (Wait ${modalTimer}s)`;
+            } else {
+                clearInterval(mInterval);
+                modalBtn.innerText = "I Understand";
+                modalBtn.disabled = false;
+                modalBtn.classList.add('ready');
+            }
+        }, 1000);
+
+        modalBtn.addEventListener('click', () => {
+            modal.style.opacity = '0';
+            setTimeout(() => modal.style.display = 'none', 500);
+        });
+
+        // --- 2. GLOBAL COOLDOWN LOGIC ---
+        let globalCooldownActive = false;
+
+        function applyGlobalCooldown(currentPlatform) {
+            globalCooldownActive = true;
+            let timeLeft = 10;
+            const allPlatforms = Object.keys(platformApiNames);
+            
+            // Disable all OTHER inputs
+            allPlatforms.forEach(p => {
+                if (p === currentPlatform) return;
+                
+                const btn = document.getElementById(`btn-${p}`);
+                const input = document.getElementById(`user-${p}`);
+                
+                if (btn && input && !btn.disabled) {
+                    btn.dataset.cooldown = "true";
+                    btn.disabled = true;
+                    input.disabled = true;
+                    btn.dataset.origText = btn.innerText;
+                    btn.innerText = `Wait ${timeLeft}s`;
+                }
+            });
+            
+            // Countdown loop
+            const cdInt = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    allPlatforms.forEach(p => {
+                        if (p === currentPlatform) return;
+                        const btn = document.getElementById(`btn-${p}`);
+                        if (btn && btn.dataset.cooldown === "true") {
+                            btn.innerText = `Wait ${timeLeft}s`;
+                        }
+                    });
+                } else {
+                    clearInterval(cdInt);
+                    globalCooldownActive = false;
+                    
+                    // Re-enable everything
+                    allPlatforms.forEach(p => {
+                        if (p === currentPlatform) return;
+                        const btn = document.getElementById(`btn-${p}`);
+                        const input = document.getElementById(`user-${p}`);
+                        
+                        if (btn && btn.dataset.cooldown === "true") {
+                            btn.disabled = false;
+                            input.disabled = false;
+                            btn.innerText = btn.dataset.origText || "Claim";
+                            btn.removeAttribute('data-cooldown');
+                        }
+                    });
+                }
+            }, 1000);
+        }
+
+        // --- 3. STANDARD TRACKING LOGIC ---
         let activePlatform = null;
         let clickTime = 0;
         let verifyTimeout = null;
@@ -416,6 +535,8 @@
         };
 
         function startTracking(platform) {
+            if (globalCooldownActive) return; // Prevent tracking clicks while on cooldown
+            
             activePlatform = platform;
             clickTime = Date.now();
             
@@ -465,40 +586,12 @@
             activePlatform = null;
         }
 
-        // --- NEW: Handle Edition Selection Prompt ---
-        function handleEditionSelect(platform, edition) {
-            const usernameInput = document.getElementById(`user-${platform}`);
-            const promptDiv = document.getElementById(`prompt-${platform}`);
-            const feedbackText = document.getElementById(`feedback-${platform}`);
-            const btn = document.getElementById(`btn-${platform}`);
-
-            promptDiv.style.display = "none";
-            feedbackText.innerText = "";
-
-            if (edition === 'bedrock') {
-                let currentVal = usernameInput.value.trim();
-                if (!currentVal.startsWith('.')) {
-                    usernameInput.value = '.' + currentVal;
-                }
-                feedbackText.style.color = "#ffaa00";
-                feedbackText.innerText = "Prefix added! Press Claim again to verify.";
-            } else {
-                feedbackText.style.color = "#ff5555";
-                feedbackText.innerText = "Make sure you are logged into the server right now!";
-            }
-
-            usernameInput.disabled = false;
-            btn.disabled = false;
-            btn.innerText = "Claim";
-        }
-
         async function submitClaim(platform) {
             const usernameInput = document.getElementById(`user-${platform}`);
             const btn = document.getElementById(`btn-${platform}`);
             const feedbackText = document.getElementById(`feedback-${platform}`);
             const actionDiv = document.getElementById(`action-${platform}`);
             const cardDiv = document.getElementById(`card-${platform}`);
-            const promptDiv = document.getElementById(`prompt-${platform}`);
             
             const username = usernameInput.value.trim();
             
@@ -509,7 +602,6 @@
             }
             
             feedbackText.innerText = "";
-            promptDiv.style.display = "none";
             usernameInput.disabled = true;
             btn.disabled = true;
             btn.innerText = "Checking...";
@@ -530,6 +622,7 @@
                 
                 const data = await response.json();
                 
+                // ERROR CATCH
                 if (data.status === "error") {
                     let cleanError = data.message.replace("[API-FAIL] ", "");
                     feedbackText.style.color = "#ff5555";
@@ -539,13 +632,7 @@
                     btn.disabled = false;
                     btn.innerText = "Claim";
                     
-                // STATE 1: UNABLE TO FIND PLAYER (Show edition choice prompt)
-                } else if (data.status === "player_offline") {
-                    feedbackText.style.color = "#ff5555";
-                    feedbackText.innerText = data.message;
-                    promptDiv.style.display = "flex"; // Show Java/Bedrock buttons
-                
-                // STATE 2: ALREADY CLAIMED PERMANENTLY (RED)
+                // STATE 1: ALREADY CLAIMED PERMANENTLY (RED)
                 } else if (data.status === "already_claimed") {
                     feedbackText.style.color = "#ff5555";
                     feedbackText.innerText = data.message;
@@ -553,7 +640,7 @@
                     cardDiv.className = "social-card failed";
                     actionDiv.innerHTML = '<span class="status-txt status-error">Already Redeemed</span>';
                     
-                // STATE 3: ALREADY VERIFIED, PENDING PICKUP (YELLOW)
+                // STATE 2: ALREADY VERIFIED, PENDING PICKUP (YELLOW)
                 } else if (data.status === "already_verified") {
                     feedbackText.style.color = "#ffaa00";
                     feedbackText.innerText = data.message;
@@ -561,13 +648,16 @@
                     cardDiv.className = "social-card pending-crate";
                     actionDiv.innerHTML = '<span class="status-txt status-pending">Check In-Game Crate</span>';
                 
-                // STATE 4: SUCCESS, GO TO CRATE (GREEN)
+                // STATE 3: SUCCESS, GO TO CRATE (GREEN)
                 } else {
                     feedbackText.style.color = "#55ff55";
                     feedbackText.innerText = data.message;
                     btn.innerText = "Sent!";
                     cardDiv.className = "social-card completed";
                     actionDiv.innerHTML = '<span class="status-txt status-done">🎁 Ready in Crate</span>';
+                    
+                    // Trigger the anti-spam lock on all other inputs!
+                    applyGlobalCooldown(platform);
                 }
                 
             } catch (error) {
