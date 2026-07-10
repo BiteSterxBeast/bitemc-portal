@@ -132,7 +132,7 @@ class Rcon {
 
 // -> EDIT THESE SETTINGS AS NEEDED <-
 $host = 'bitemc.xyz'; // Switch to raw IP if using a domain proxy
-$port = 60413; 
+$port = 50004; 
 $password = 'bitebooneydev67'; 
 $timeout = 3; 
 
