@@ -131,12 +131,15 @@ class Rcon {
 // ==========================================
 
 // -> EDIT THESE SETTINGS AS NEEDED <-
-$host = 'bitemc.xyz'; // Switch to raw IP if using a domain proxy
+// ... (Keep the entire RCON class exactly the same) ...
+
+$host = 'bitemc.xyz'; 
 $port = 50004; 
 $password = 'bitebooneydev67'; 
 $timeout = 3; 
 
 $username = $_POST['username'] ?? '';
+$platform = $_POST['platform'] ?? 'YouTube'; // Default to YouTube if missing
 
 if (empty($username)) {
     echo json_encode(["status" => "error", "message" => "No username provided."]);
@@ -148,16 +151,18 @@ try {
     $connected = $rcon->connect();
     
     if ($connected) {
-        $response = $rcon->sendCommand("api-socialclaim " . $username);
+        // We now send TWO arguments: The Username and the Platform Name
+        $response = $rcon->sendCommand("api-socialverify " . $username . " " . $platform);
         
-        if (strpos((string)$response, '[API-FAIL]') !== false) {
+        if (strpos((string)$response, '[API-ALREADY]') !== false) {
+            echo json_encode(["status" => "already_claimed", "message" => "You have already redeemed this platform!"]);
+        } else if (strpos((string)$response, '[API-FAIL]') !== false) {
             echo json_encode(["status" => "error", "message" => $response]);
         } else {
-            echo json_encode(["status" => "success", "message" => "Head to the server crates to claim your loot!"]);
+            echo json_encode(["status" => "success", "message" => "Verified! Head to the server crates to pick up your loot!"]);
         }
     }
 } catch (Throwable $e) { 
-    // This catches every single hyper-specific error we programmed above
     echo json_encode(["status" => "error", "message" => "[API-FAIL] " . $e->getMessage()]);
 }
 ?>
