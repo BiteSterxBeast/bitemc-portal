@@ -127,11 +127,8 @@ class Rcon {
 }
 
 // ==========================================
-// 🚀 MAIN API LOGIC
+// 🚀 MAIN API LOGIC (WITH SMART BEDROCK LOOKUP)
 // ==========================================
-
-// -> EDIT THESE SETTINGS AS NEEDED <-
-// ... (Keep the entire RCON class exactly the same) ...
 
 $host = 'bitemc.xyz'; 
 $port = 50004; 
@@ -139,7 +136,7 @@ $password = 'bitebooneydev67';
 $timeout = 3; 
 
 $username = $_POST['username'] ?? '';
-$platform = $_POST['platform'] ?? 'YouTube'; // Default to YouTube if missing
+$platform = $_POST['platform'] ?? 'YouTube'; 
 
 if (empty($username)) {
     echo json_encode(["status" => "error", "message" => "No username provided."]);
@@ -151,12 +148,25 @@ try {
     $connected = $rcon->connect();
     
     if ($connected) {
+        // --- STEP 1: Attempt standard claim (Java or explicit Bedrock with dot) ---
         $response = $rcon->sendCommand("api-socialverify " . $username . " " . $platform);
         
+        // If the server tells us the player is offline, and the user DID NOT type a dot, try Bedrock!
+        if (strpos((string)$response, 'Player must be online') !== false && substr($username, 0, 1) !== '.') {
+            
+            // --- STEP 2: Smart Bedrock Retry (Prepend the dot) ---
+            $bedrockUsername = '.' . $username;
+            $response = $rcon->sendCommand("api-socialverify " . $bedrockUsername . " " . $platform);
+        }
+        
+        // --- STEP 3: Process the final response ---
         if (strpos((string)$response, '[API-ALREADY-VERIFIED]') !== false) {
             echo json_encode(["status" => "already_verified", "message" => "Already verified! Go open the crate in-game!"]);
         } else if (strpos((string)$response, '[API-ALREADY]') !== false) {
             echo json_encode(["status" => "already_claimed", "message" => "Error: You have already permanently redeemed this platform!"]);
+        } else if (strpos((string)$response, 'Player must be online') !== false) {
+            // Tell the frontend that the player wasn't found so it can show the Bedrock/Java selection buttons
+            echo json_encode(["status" => "player_offline", "message" => "Player must be online to claim rewards! Are you on Bedrock or Java?"]);
         } else if (strpos((string)$response, '[API-FAIL]') !== false) {
             echo json_encode(["status" => "error", "message" => $response]);
         } else {
@@ -166,3 +176,4 @@ try {
 } catch (Throwable $e) { 
     echo json_encode(["status" => "error", "message" => "[API-FAIL] " . $e->getMessage()]);
 }
+?>
