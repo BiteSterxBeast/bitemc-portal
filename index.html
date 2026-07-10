@@ -434,7 +434,7 @@
         </div>
     </div>
 
-    <script>
+<script>
         // --- 1. MODAL LOGIC ---
         const modal = document.getElementById('bedrockModal');
         const modalBtn = document.getElementById('modalBtn');
@@ -457,57 +457,65 @@
             setTimeout(() => modal.style.display = 'none', 500);
         });
 
-        // --- 2. GLOBAL COOLDOWN LOGIC ---
+        // --- 2. GLOBAL COOLDOWN LOGIC (STARTS ON RETURN) ---
         let globalCooldownActive = false;
 
         function applyGlobalCooldown(currentPlatform) {
+            if (globalCooldownActive) return; // Don't restart it if it's already running
             globalCooldownActive = true;
+            
             let timeLeft = 10;
             const allPlatforms = Object.keys(platformApiNames);
             
-            // Disable all OTHER inputs
             allPlatforms.forEach(p => {
-                if (p === currentPlatform) return;
+                if (p === currentPlatform) return; // Keep the active platform unlocked
                 
+                const actionDiv = document.getElementById(`action-${p}`);
                 const btn = document.getElementById(`btn-${p}`);
                 const input = document.getElementById(`user-${p}`);
                 
-                if (btn && input && !btn.disabled) {
-                    btn.dataset.cooldown = "true";
-                    btn.disabled = true;
-                    input.disabled = true;
-                    btn.dataset.origText = btn.innerText;
-                    btn.innerText = `Wait ${timeLeft}s`;
+                // Freeze the "Follow Link" buttons or status texts for other platforms
+                if (actionDiv && !actionDiv.dataset.inCooldown) {
+                    actionDiv.dataset.origHtml = actionDiv.innerHTML; // Remember the original link button
+                    actionDiv.dataset.inCooldown = "true";
+                    actionDiv.innerHTML = `<span class="status-txt status-error" style="color: #6a6f7e; text-shadow: none;">Wait ${timeLeft}s</span>`;
                 }
+                
+                // Failsafe: lock input zones if they somehow managed to open them
+                if (btn) btn.disabled = true;
+                if (input) input.disabled = true;
             });
             
-            // Countdown loop
+            // 10 Second Countdown Ticker
             const cdInt = setInterval(() => {
                 timeLeft--;
                 if (timeLeft > 0) {
                     allPlatforms.forEach(p => {
                         if (p === currentPlatform) return;
-                        const btn = document.getElementById(`btn-${p}`);
-                        if (btn && btn.dataset.cooldown === "true") {
-                            btn.innerText = `Wait ${timeLeft}s`;
+                        const actionDiv = document.getElementById(`action-${p}`);
+                        if (actionDiv && actionDiv.dataset.inCooldown === "true") {
+                            actionDiv.innerHTML = `<span class="status-txt status-error" style="color: #6a6f7e; text-shadow: none;">Wait ${timeLeft}s</span>`;
                         }
                     });
                 } else {
                     clearInterval(cdInt);
                     globalCooldownActive = false;
                     
-                    // Re-enable everything
+                    // Restore original link buttons perfectly
                     allPlatforms.forEach(p => {
                         if (p === currentPlatform) return;
+                        const actionDiv = document.getElementById(`action-${p}`);
                         const btn = document.getElementById(`btn-${p}`);
                         const input = document.getElementById(`user-${p}`);
                         
-                        if (btn && btn.dataset.cooldown === "true") {
-                            btn.disabled = false;
-                            input.disabled = false;
-                            btn.innerText = btn.dataset.origText || "Claim";
-                            btn.removeAttribute('data-cooldown');
+                        if (actionDiv && actionDiv.dataset.inCooldown === "true") {
+                            actionDiv.innerHTML = actionDiv.dataset.origHtml;
+                            actionDiv.removeAttribute('data-in-cooldown');
+                            actionDiv.removeAttribute('data-orig-html');
                         }
+                        
+                        if (btn) btn.disabled = false;
+                        if (input) input.disabled = false;
                     });
                 }
             }, 1000);
@@ -535,7 +543,7 @@
         };
 
         function startTracking(platform) {
-            if (globalCooldownActive) return; // Prevent tracking clicks while on cooldown
+            if (globalCooldownActive) return; 
             
             activePlatform = platform;
             clickTime = Date.now();
@@ -550,6 +558,7 @@
             }, 7000);
         }
 
+        // 👁️ TAB VISIBILITY MONITOR (Triggers Cooldown on Return)
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && activePlatform !== null) {
                 const timeSpentAway = (Date.now() - clickTime) / 1000;
@@ -557,6 +566,9 @@
                 if (timeSpentAway < 3) {
                     clearTimeout(verifyTimeout);
                     executeVerificationFailure(activePlatform);
+                } else {
+                    // 👉 THE FIX: The split second they open back the site, start the 10s cooldown!
+                    applyGlobalCooldown(activePlatform);
                 }
             }
         });
@@ -622,7 +634,6 @@
                 
                 const data = await response.json();
                 
-                // ERROR CATCH
                 if (data.status === "error") {
                     let cleanError = data.message.replace("[API-FAIL] ", "");
                     feedbackText.style.color = "#ff5555";
@@ -632,7 +643,6 @@
                     btn.disabled = false;
                     btn.innerText = "Claim";
                     
-                // STATE 1: ALREADY CLAIMED PERMANENTLY (RED)
                 } else if (data.status === "already_claimed") {
                     feedbackText.style.color = "#ff5555";
                     feedbackText.innerText = data.message;
@@ -640,7 +650,6 @@
                     cardDiv.className = "social-card failed";
                     actionDiv.innerHTML = '<span class="status-txt status-error">Already Redeemed</span>';
                     
-                // STATE 2: ALREADY VERIFIED, PENDING PICKUP (YELLOW)
                 } else if (data.status === "already_verified") {
                     feedbackText.style.color = "#ffaa00";
                     feedbackText.innerText = data.message;
@@ -648,16 +657,12 @@
                     cardDiv.className = "social-card pending-crate";
                     actionDiv.innerHTML = '<span class="status-txt status-pending">Check In-Game Crate</span>';
                 
-                // STATE 3: SUCCESS, GO TO CRATE (GREEN)
                 } else {
                     feedbackText.style.color = "#55ff55";
                     feedbackText.innerText = data.message;
                     btn.innerText = "Sent!";
                     cardDiv.className = "social-card completed";
                     actionDiv.innerHTML = '<span class="status-txt status-done">🎁 Ready in Crate</span>';
-                    
-                    // Trigger the anti-spam lock on all other inputs!
-                    applyGlobalCooldown(platform);
                 }
                 
             } catch (error) {
