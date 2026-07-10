@@ -1,41 +1,46 @@
 <?php
-// 1. Force PHP to hide raw text warnings so it doesn't break our JSON!
-error_reporting(0);
-ini_set('display_errors', 0);
+// 1. Start the "net" to catch any raw PHP errors/warnings
+ob_start();
 
 require __DIR__ . '/src/Rcon.php';
 use Thedudeguy\Rcon;
 
-header('Content-Type: application/json');
-
 // --- SERVER SETTINGS ---
 $host = 'bitemc.xyz'; 
-$port = 50019; // 2. Updated to your new port!
+$port = 50019; 
 $password = 'bitebooneydev67'; 
 $timeout = 3; 
 
 $username = $_POST['username'] ?? '';
+$final_response = []; // We will store our JSON response here
 
 if (empty($username)) {
-    echo json_encode(["status" => "error", "message" => "No username provided."]);
-    exit;
+    $final_response = ["status" => "error", "message" => "No username provided."];
+} else {
+    try {
+        $rcon = new Rcon($host, $port, $password, $timeout);
+        
+        if ($rcon->connect()) {
+            $response = $rcon->sendCommand("api-socialclaim " . $username);
+            
+            if (strpos($response, '[API-FAIL]') !== false) {
+                $final_response = ["status" => "error", "message" => $response];
+            } else {
+                $final_response = ["status" => "success", "message" => "Head to the server crates to claim your loot!"];
+            }
+        } else {
+            // If it fails, we set the response instead of crashing!
+            $final_response = ["status" => "error", "message" => "[API-FAIL] Server connection refused. (Port blocked or offline)"];
+        }
+    } catch (Exception $e) {
+        $final_response = ["status" => "error", "message" => "[API-FAIL] RCON Error: " . $e->getMessage()];
+    }
 }
 
-try {
-    $rcon = new Rcon($host, $port, $password, $timeout);
-    
-    if ($rcon->connect()) {
-        $response = $rcon->sendCommand("api-socialclaim " . $username);
-        
-        if (strpos($response, '[API-FAIL]') !== false) {
-            echo json_encode(["status" => "error", "message" => $response]);
-        } else {
-            echo json_encode(["status" => "success", "message" => "Head to the server crates to claim your loot!"]);
-        }
-    } else {
-        echo json_encode(["status" => "error", "message" => "[API-FAIL] Server connection refused. (Port blocked or offline)"]);
-    }
-} catch (Exception $e) {
-    echo json_encode(["status" => "error", "message" => "[API-FAIL] RCON Error: Connection Timed Out."]);
-}
+// 2. Empty the net (throw away any PHP warnings that happened above)
+ob_end_clean();
+
+// 3. Securely send ONLY our clean JSON back to the website
+header('Content-Type: application/json');
+echo json_encode($final_response);
 ?>
