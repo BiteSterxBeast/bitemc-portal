@@ -6,7 +6,7 @@
     <title>BiteMC - Social Rewards Portal</title>
     <style>
         body {
-            background-color: #0f1115;
+            background-color: #050505;
             color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
@@ -17,17 +17,51 @@
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
         }
 
+        /* 🟢 NEON GRID BACKGROUND */
+        body::before {
+            content: "";
+            position: absolute;
+            top: -50%; left: -50%; right: -50%; bottom: -50%;
+            background-image: 
+                linear-gradient(rgba(85, 255, 85, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(85, 255, 85, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transform: perspective(500px) rotateX(45deg);
+            animation: gridMove 15s linear infinite;
+            z-index: -2;
+        }
+        
+        /* Background vignette for depth */
+        body::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, transparent 20%, #050505 100%);
+            z-index: -1;
+        }
+
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(45deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(45deg) translateY(40px); }
+        }
+
+        /* 🧊 LIQUID GLASS UI CONTAINER */
         .container {
-            background-color: #161920;
+            background: rgba(20, 24, 32, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(85, 255, 85, 0.05);
             width: 100%;
             max-width: 480px;
             text-align: center;
-            border: 1px solid #232834;
+            border: 1px solid rgba(85, 255, 85, 0.2);
+            z-index: 10;
         }
 
         h1 {
@@ -35,7 +69,8 @@
             margin-bottom: 5px;
             font-size: 28px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 10px rgba(85, 255, 85, 0.4);
         }
 
         p.subtitle {
@@ -52,22 +87,37 @@
             margin-bottom: 10px;
         }
 
+        /* GLASS CARDS */
         .social-card {
-            background-color: #1f232e;
-            border: 1px solid #2d3345;
-            border-radius: 8px;
+            background: rgba(30, 35, 45, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
             padding: 15px;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+        }
+
+        .social-card:hover {
+            background: rgba(40, 45, 60, 0.5);
+            border-color: rgba(255, 255, 255, 0.1);
         }
 
         .social-card.completed {
-            border-color: #55ff55;
-            background-color: rgba(85, 255, 85, 0.02);
+            border-color: rgba(85, 255, 85, 0.6);
+            background: rgba(85, 255, 85, 0.05);
+            box-shadow: 0 0 15px rgba(85, 255, 85, 0.1);
+        }
+        
+        .social-card.pending-crate {
+            border-color: rgba(255, 170, 0, 0.6);
+            background: rgba(255, 170, 0, 0.05);
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.1);
         }
 
         .social-card.failed {
-            border-color: #ff5555;
-            background-color: rgba(255, 83, 83, 0.02);
+            border-color: rgba(255, 85, 85, 0.6);
+            background: rgba(255, 85, 85, 0.05);
+            box-shadow: 0 0 15px rgba(255, 85, 85, 0.1);
         }
 
         .social-item {
@@ -91,51 +141,52 @@
         }
 
         .btn {
-            background-color: #5555ff;
+            background: linear-gradient(135deg, #4444ff, #5555ff);
             color: white;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 10px 16px;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
             text-decoration: none;
             font-size: 14px;
-            transition: background 0.2s;
+            transition: all 0.2s ease;
             display: inline-block;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
         .btn:hover:not(:disabled) {
-            background-color: #3b3bff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(85, 85, 255, 0.4);
         }
         
         .btn:disabled {
-            background-color: #3f4455;
+            background: #2a2e3a;
             cursor: not-allowed;
-            color: #888e9e;
+            color: #6a6f7e;
+            transform: none;
+            box-shadow: none;
         }
 
         .btn-retry {
-            background-color: #ff5555;
+            background: linear-gradient(135deg, #cc3333, #ff5555);
         }
-
-        .btn-retry:hover {
-            background-color: #cc3333;
-        }
+        .btn-retry:hover { box-shadow: 0 6px 15px rgba(255, 85, 85, 0.4); }
 
         .status-txt {
             font-weight: bold;
             font-size: 14px;
         }
 
-        .status-pending { color: #ffaa00; }
-        .status-done { color: #55ff55; }
-        .status-error { color: #ff5555; }
+        .status-pending { color: #ffaa00; text-shadow: 0 0 5px rgba(255, 170, 0, 0.5); }
+        .status-done { color: #55ff55; text-shadow: 0 0 5px rgba(85, 255, 85, 0.5); }
+        .status-error { color: #ff5555; text-shadow: 0 0 5px rgba(255, 85, 85, 0.5); }
 
         .claim-zone {
             display: none;
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px dashed #2d3345;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
             animation: fadeIn 0.4s ease forwards;
         }
 
@@ -146,34 +197,34 @@
         }
 
         input[type="text"] {
-            background-color: #0f1115;
-            border: 1px solid #2d3345;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             padding: 10px;
-            border-radius: 6px;
+            border-radius: 8px;
             width: 60%;
             font-size: 14px;
             text-align: center;
+            transition: all 0.3s;
         }
 
         input[type="text"]:focus {
             border-color: #55ff55;
+            box-shadow: 0 0 10px rgba(85, 255, 85, 0.2);
             outline: none;
         }
         
         input[type="text"]:disabled {
-            background-color: #1a1e29;
-            color: #888e9e;
+            background: rgba(0, 0, 0, 0.5);
+            color: #6a6f7e;
         }
 
         .btn-claim {
-            background-color: #55ff55;
-            color: #0f1115;
-            padding: 10px 14px;
+            background: linear-gradient(135deg, #33cc33, #55ff55);
+            color: #050505;
         }
-
         .btn-claim:hover:not(:disabled) {
-            background-color: #33cc33;
+            box-shadow: 0 6px 15px rgba(85, 255, 85, 0.4);
         }
         
         .api-feedback {
@@ -314,7 +365,6 @@
             tiktok: "https://tiktok.com/@biteplaysmc"
         };
 
-        // Maps HTML IDs to the exact string your Skript file requires!
         const platformApiNames = {
             discord: "Discord",
             youtube: "YouTube",
@@ -350,11 +400,9 @@
 
         function executeVerificationSuccess(platform) {
             const actionDiv = document.getElementById(`action-${platform}`);
-            const cardDiv = document.getElementById(`card-${platform}`);
             const claimZone = document.getElementById(`claim-${platform}`);
             
-            actionDiv.innerHTML = '<span class="status-txt status-done">✓ Verified</span>';
-            cardDiv.className = "social-card completed";
+            actionDiv.innerHTML = '<span class="status-txt status-pending">Waiting for Claim</span>';
             claimZone.style.display = "block";
             
             if(activePlatform === platform) activePlatform = null;
@@ -380,6 +428,7 @@
             const btn = document.getElementById(`btn-${platform}`);
             const feedbackText = document.getElementById(`feedback-${platform}`);
             const actionDiv = document.getElementById(`action-${platform}`);
+            const cardDiv = document.getElementById(`card-${platform}`);
             
             const username = usernameInput.value.trim();
             
@@ -397,8 +446,6 @@
             try {
                 const formData = new FormData();
                 formData.append('username', username);
-                
-                // Uses the mapped dictionary to send capitalized strings like "YouTube" instead of "youtube"
                 formData.append('platform', platformApiNames[platform]); 
                 
                 const response = await fetch('claim.php', {
@@ -412,6 +459,7 @@
                 
                 const data = await response.json();
                 
+                // ERROR CATCH (RCON Failure)
                 if (data.status === "error") {
                     let cleanError = data.message.replace("[API-FAIL] ", "");
                     feedbackText.style.color = "#ff5555";
@@ -421,24 +469,34 @@
                     btn.disabled = false;
                     btn.innerText = "Claim";
                     
+                // STATE 1: ALREADY CLAIMED PERMANENTLY (RED)
                 } else if (data.status === "already_claimed") {
-                    // Specific handling for if they already claimed it on the server
-                    feedbackText.style.color = "#ffaa00";
-                    feedbackText.innerText = "You have already redeemed this reward!";
+                    feedbackText.style.color = "#ff5555";
+                    feedbackText.innerText = data.message;
                     btn.innerText = "Claimed";
+                    cardDiv.className = "social-card failed";
+                    actionDiv.innerHTML = '<span class="status-txt status-error">Already Redeemed</span>';
                     
+                // STATE 2: ALREADY VERIFIED, PENDING PICKUP (YELLOW)
+                } else if (data.status === "already_verified") {
+                    feedbackText.style.color = "#ffaa00";
+                    feedbackText.innerText = data.message;
+                    btn.innerText = "Pending";
+                    cardDiv.className = "social-card pending-crate";
+                    actionDiv.innerHTML = '<span class="status-txt status-pending">Check In-Game Crate</span>';
+                
+                // STATE 3: SUCCESS, GO TO CRATE (GREEN)
                 } else {
-                    // SUCCESS! 
                     feedbackText.style.color = "#55ff55";
                     feedbackText.innerText = data.message;
                     btn.innerText = "Sent!";
+                    cardDiv.className = "social-card completed";
                     actionDiv.innerHTML = '<span class="status-txt status-done">🎁 Ready in Crate</span>';
                 }
                 
             } catch (error) {
                 feedbackText.style.color = "#ff5555";
                 feedbackText.innerText = "Website Error: " + error.message;
-                console.error('Full Error Log:', error);
                 
                 usernameInput.disabled = false;
                 btn.disabled = false;
