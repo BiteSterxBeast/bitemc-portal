@@ -98,7 +98,7 @@ class Rcon {
 // ==========================================
 // 🚀 MAIN API LOGIC
 // ==========================================
-$host = 'bitemc.xyz'; 
+$host = '65.109.63.52'; 
 $port = 50019; 
 $password = 'bitebooneydev67'; 
 $timeout = 3; 
