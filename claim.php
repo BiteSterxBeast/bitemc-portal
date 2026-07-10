@@ -99,7 +99,7 @@ class Rcon {
 // 🚀 MAIN API LOGIC
 // ==========================================
 $host = '65.109.63.52'; 
-$port = 50019; 
+$port = 60413; 
 $password = 'bitebooneydev67'; 
 $timeout = 3; 
 
