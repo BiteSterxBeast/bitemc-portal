@@ -5,7 +5,7 @@ use Thedudeguy\Rcon;
 header('Content-Type: application/json');
 
 $host = 'bitemc.xyz'; 
-$port = 25575; 
+$port = 50019; 
 $password = 'bitebooneydev67'; 
 $timeout = 3; 
 
