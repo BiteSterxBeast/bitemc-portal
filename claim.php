@@ -1,17 +1,30 @@
 <?php
-ob_start();
+// 1. Force JSON output for everything, even crashes
+header('Content-Type: application/json');
+
+// 2. The Safety Net: Catch absolute fatal errors and turn them into readable text!
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error !== null && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        echo json_encode([
+            "status" => "error", 
+            "message" => "PHP CRASH: " . $error['message'] . " in " . basename($error['file']) . " on line " . $error['line']
+        ]);
+    }
+});
+
+// Hide default HTML errors so they don't break our JSON
 error_reporting(0);
 ini_set('display_errors', 0);
 
-// Use a more robust path to ensure PHP finds the library
-$rconLibrary = __DIR__ . '/src/Rcon.php';
-
-if (!file_exists($rconLibrary)) {
-    echo json_encode(["status" => "error", "message" => "[API-FAIL] RCON library not found at: " . $rconLibrary]);
+// 3. Explicitly check if the file exists before crashing!
+$rconFile = __DIR__ . '/src/Rcon.php';
+if (!file_exists($rconFile)) {
+    echo json_encode(["status" => "error", "message" => "Missing File: Cannot find src/Rcon.php in GitHub!"]);
     exit;
 }
 
-require $rconLibrary;
+require $rconFile;
 use Thedudeguy\Rcon;
 
 // --- SERVER SETTINGS ---
@@ -21,7 +34,6 @@ $password = 'bitebooneydev67';
 $timeout = 3; 
 
 $username = $_POST['username'] ?? '';
-$final_response = []; 
 
 if (empty($username)) {
     echo json_encode(["status" => "error", "message" => "No username provided."]);
@@ -30,27 +42,20 @@ if (empty($username)) {
 
 try {
     $rcon = new Rcon($host, $port, $password, $timeout);
-    
-    // 2. Temporarily trap any connection warnings in a black hole
-    set_error_handler(function() { return true; });
-    $connected = $rcon->connect();
-    restore_error_handler(); // Release the trap
+    $connected = @$rcon->connect();
     
     if ($connected) {
-        $response = $rcon->sendCommand("api-socialclaim " . $username);
+        $response = @$rcon->sendCommand("api-socialclaim " . $username);
         
         if (strpos($response, '[API-FAIL]') !== false) {
-            $final_response = ["status" => "error", "message" => $response];
+            echo json_encode(["status" => "error", "message" => $response]);
         } else {
-            $final_response = ["status" => "success", "message" => "Head to the server crates to claim your loot!"];
+            echo json_encode(["status" => "success", "message" => "Head to the server crates to claim your loot!"]);
         }
     } else {
-        $final_response = ["status" => "error", "message" => "[API-FAIL] Connection refused by Minecraft Server."];
+        echo json_encode(["status" => "error", "message" => "[API-FAIL] Server connection refused. (Check rcon.ip=0.0.0.0)"]);
     }
 } catch (Exception $e) {
-    $final_response = ["status" => "error", "message" => "[API-FAIL] RCON Connection Timed Out."];
+    echo json_encode(["status" => "error", "message" => "[API-FAIL] RCON Error: " . $e->getMessage()]);
 }
-
-// 3. Send ONLY the pure JSON back
-echo json_encode($final_response);
 ?>
