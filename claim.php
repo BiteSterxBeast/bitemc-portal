@@ -1,10 +1,17 @@
 <?php
-// 1. Absolute Silence: Force PHP to never output HTML warnings
-ini_set('display_errors', 0);
+ob_start();
 error_reporting(0);
-header('Content-Type: application/json');
+ini_set('display_errors', 0);
 
-require __DIR__ . '/src/Rcon.php';
+// Use a more robust path to ensure PHP finds the library
+$rconLibrary = __DIR__ . '/src/Rcon.php';
+
+if (!file_exists($rconLibrary)) {
+    echo json_encode(["status" => "error", "message" => "[API-FAIL] RCON library not found at: " . $rconLibrary]);
+    exit;
+}
+
+require $rconLibrary;
 use Thedudeguy\Rcon;
 
 // --- SERVER SETTINGS ---
