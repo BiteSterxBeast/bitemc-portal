@@ -202,7 +202,7 @@
                         <div class="social-desc">Subscribe to our main channel</div>
                     </div>
                     <div class="social-action" id="action-yt">
-                        <a href="https://youtube.com" target="_blank" class="btn" onclick="startTracking('yt')">Follow Link</a>
+                        <a href="https://youtube.com/c/BiteSterxBeast" target="_blank" class="btn" onclick="startTracking('yt')">Follow Link</a>
                     </div>
                 </div>
                 <div class="claim-zone" id="claim-yt">
@@ -241,7 +241,7 @@
         let verifyTimeout = null;
 
         const links = {
-            yt: "https://youtube.com",
+            yt: "https://youtube.com/c/BiteSterxBeast",
             tw: "https://twitter.com"
         };
 
@@ -326,17 +326,26 @@
                     body: formData
                 });
                 
+                // Catch hard crashes (like 500 Internal Server Errors)
+                if (!response.ok) {
+                    throw new Error('Server returned HTTP Status ' + response.status);
+                }
+                
                 const data = await response.json();
                 
                 if (data.status === "error") {
+                    // Extract Skript's exact error message and display it
                     let cleanError = data.message.replace("[API-FAIL] ", "");
                     feedbackText.style.color = "#ff5555";
                     feedbackText.innerText = cleanError;
+                    
+                    // Unlock the box so they can try again
                     usernameInput.disabled = false;
                     btn.disabled = false;
                     btn.innerText = "Claim";
                     
                 } else {
+                    // SUCCESS! 
                     feedbackText.style.color = "#55ff55";
                     feedbackText.innerText = data.message;
                     btn.innerText = "Sent!";
@@ -344,8 +353,11 @@
                 }
                 
             } catch (error) {
+                // Failsafe for network disconnection or JSON parsing failure
                 feedbackText.style.color = "#ff5555";
-                feedbackText.innerText = "Could not connect to the server database. Try again later.";
+                feedbackText.innerText = "Website Error: " + error.message;
+                console.error('Full Error Log:', error);
+                
                 usernameInput.disabled = false;
                 btn.disabled = false;
                 btn.innerText = "Claim";
