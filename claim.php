@@ -131,7 +131,7 @@ class Rcon {
 // ==========================================
 
 $host = 'bitemc.xyz'; 
-$port = 60456; 
+$port = 60414; 
 $password = 'bitebooneydev67'; 
 $timeout = 3; 
 
